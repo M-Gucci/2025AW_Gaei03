@@ -97,8 +97,8 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
             print("Invalid input. Please enter a number.")
 
     # Fixed figsize to A3 portrait size
-    paper_width_cm = 16.5 * 2.54 # A3 width in cm
-    paper_height_cm = 23.4 * 2.54 # A3 height in cm
+    paper_width_cm = 11.69 * 2.54 # A3 width in cm
+    paper_height_cm = 16.54 * 2.54 # A3 height in cm
     
     fig = plt.figure(figsize=(paper_width_cm / 2.54, paper_height_cm / 2.54)) # Fixed A3 figsize
     ax = fig.add_subplot(111)
