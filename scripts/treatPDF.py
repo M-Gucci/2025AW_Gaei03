@@ -8,7 +8,7 @@ Rect  = namedtuple("Rect", ["x0", "y0", "x1", "y1"])
 namespace = {'Point': Point, 'Rect': Rect}
 
 # Open the source PDF
-doc = pymupdf.open("pawn2.pdf")
+doc = pymupdf.open("board_rb.pdf")
 page = doc[0]
 paths = page.get_drawings()
 
@@ -54,7 +54,7 @@ for items in data:
 shape.commit()
 
 # Save the new PDF with filtered lines
-out_pdf.save("pawn_filtered.pdf")
+out_pdf.save("board_rb_filtered.pdf")
 
 # Close the documents
 out_pdf.close()
