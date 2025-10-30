@@ -108,7 +108,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
     data_height = max_y_model - min_y_model
 
     # Add a small padding in data units
-    padding_factor = 0.05
+    padding_factor = 0
     padding_x_data = data_width * padding_factor
     padding_y_data = data_height * padding_factor
 
