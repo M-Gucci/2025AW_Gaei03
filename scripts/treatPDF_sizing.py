@@ -193,23 +193,22 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
     #     ax.plot(x_coords, y_coords, 'ko', markersize=3, label='Vertices')
 
     # Plot circles around unreferenced vertices
-    if unreferenced_vertices_coords:
-        print("\nUnreferenced vertices detected. Please enter the desired circle diameter.")
-        while True:
-            try:
-                diameter_str = input("Enter circle diameter (e.g., 0.1): ")
-                diameter = float(diameter_str)
-                if diameter <= 0:
-                    print("Diameter must be a positive number.")
-                    continue
-                break
-            except ValueError:
-                print("Invalid input. Please enter a number.")
+    # if unreferenced_vertices_coords:
+    #     print("\nUnreferenced vertices detected. Please enter the desired circle diameter.")
+    #     while True:
+    #         try:
+    #             diameter_str = input("Enter circle diameter (e.g., 0.1): ")
+    #             diameter = float(diameter_str)
+    #             if diameter <= 0:
+    #                 print("Diameter must be a positive number.")
+    #                 continue
+    #         except ValueError:
+    #             print("Invalid input. Please enter a number.")
 
-        for ux, uy in unreferenced_vertices_coords:
-            circle = patches.Circle((ux, uy), radius=diameter/2, edgecolor='red', facecolor='none', linestyle='-', linewidth=1.5)
-            ax.add_patch(circle)
-        print(f"Circles with diameter {diameter} drawn around unreferenced vertices.")
+    #     for ux, uy in unreferenced_vertices_coords:
+    #         circle = patches.Circle((ux, uy), radius=diameter/2, edgecolor='red', facecolor='none', linestyle='-', linewidth=1.5)
+    #         ax.add_patch(circle)
+    #     print(f"Circles with diameter {diameter} drawn around unreferenced vertices.")
 
     # Remove axis labels, title, and grid for clean output
     ax.axis('off') # Turn off all axis lines, ticks, and labels
