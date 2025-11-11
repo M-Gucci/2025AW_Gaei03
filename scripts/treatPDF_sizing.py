@@ -170,6 +170,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                     v1, v2 = vertices[v1_idx], vertices[v2_idx]
                     ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-')
 
+
     # 孤立点の周りに円を描画
     if unreferenced_vertices_coords:
         print("\n孤立点が検出されました。描画する円の直径を入力してください。")
@@ -188,6 +189,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
             circle = Circle((ux, uy), radius=diameter/2, edgecolor='red', facecolor='none', linestyle='-', linewidth=1.5)
             ax.add_patch(circle)
         print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
+
 
     # --- 出力設定 ---
     ax.axis('off')
