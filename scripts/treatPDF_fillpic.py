@@ -2,17 +2,15 @@ import matplotlib.pyplot as plt
 import sys
 import os
 import matplotlib.image as mpimg
-from matplotlib.patches import Polygon, Circle # PolygonとCircleをインポート
+from matplotlib.patches import Polygon, Circle
 
 def parse_obj(filename):
     """
     .objファイルを解析して、頂点、線、面の情報を抽出し、孤立点も検出する。
     """
-    vertices_raw = []  # v行の情報を [x, y, z] のリストとして格納
-    lines = []         # l行の情報を頂点インデックスのリストとして格納
-    faces = []         # f行の情報を頂点インデックスのリストとして格納
-    
-    # 孤立点検出用
+    vertices_raw = []
+    lines = []
+    faces = []
     total_vertices_count = 0
     referenced_indices_set = set()
 
@@ -44,7 +42,6 @@ def parse_obj(filename):
         print(f"ファイルの解析中にエラーが発生しました: {e}")
         sys.exit(1)
 
-    # 孤立点の座標を計算
     unreferenced_vertices_coords = []
     if total_vertices_count > 0:
         defined_indices_set = set(range(1, total_vertices_count + 1))
@@ -55,7 +52,6 @@ def parse_obj(filename):
             if 0 <= idx_0based < len(vertices_raw):
                 unreferenced_vertices_coords.append((vertices_raw[idx_0based][0], vertices_raw[idx_0based][1]))
 
-    # モデルのバウンディングボックス（描画範囲）を計算
     min_x_model, max_x_model = float('inf'), float('-inf')
     min_y_model, max_y_model = float('inf'), float('-inf')
 
@@ -82,6 +78,17 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
 
     # --- ユーザー入力セクション ---
 
+    # 処理モードの選択
+    print("\n実行したい処理を選択してください:")
+    print("1: 面全体を画像で埋める")
+    print("2: 指定した位置にマーク（画像）を配置する")
+    while True:
+        mode = input("選択 (1 or 2): ").strip()
+        if mode in ['1', '2']:
+            break
+        else:
+            print("無効な選択です。1または2を入力してください。")
+
     # スケールの入力
     print("\n希望する出力スケールを入力してください（例: 1.0単位 = 1.0cm）。")
     while True:
@@ -95,40 +102,26 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
         except ValueError:
             print("無効な入力です。数値を入力してください。")
 
-    # 塗りつぶし色の入力
-    print("\n面の塗りつぶし色をRGB値（0～255）で入力してください。")
-    while True:
-        try:
-            rgb_str = input("RGB値をスペース区切りで入力 (例: 211 211 211): ")
-            r, g, b = [int(val) for val in rgb_str.split()]
-            if not (0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255):
-                print("各値は0から255の間でなければなりません。")
-                continue
-            # matplotlibは0-1の範囲で色を指定するため、255で割る
-            fill_color = (r / 255, g / 255, b / 255)
-            break
-        except ValueError:
-            print("無効な入力です。3つの数値をスペース区切りで入力してください。")
-        except Exception as e:
-            print(f"予期せぬエラーが発生しました: {e}")
-
-    # マーク配置の選択
-    place_mark = False
+    # モードに応じた入力
+    image_path = None
     mark_img = None
     center_x, center_y, mark_width = 0, 0, 0
-    print("\nマーク（画像）を配置しますか？")
-    while True:
-        choice = input("選択 (y/n): ").lower().strip()
-        if choice in ['y', 'yes']:
-            place_mark = True
-            break
-        elif choice in ['n', 'no']:
-            place_mark = False
-            break
-        else:
-            print("無効な入力です。'y'または'n'を入力してください。")
 
-    if place_mark:
+    if mode == '1':
+        # 貼り付ける画像のパスを入力
+        print("\n面に貼り付ける画像ファイルのパスを入力してください。")
+        while True:
+            image_path = input("画像ファイルのパス: ").strip()
+            if os.path.exists(image_path) and os.path.isfile(image_path):
+                try:
+                    img = mpimg.imread(image_path)
+                    break
+                except Exception as e:
+                    print(f"画像を読み込めませんでした: {e}")
+            else:
+                print("無効なパスです。ファイルが存在しません。")
+    
+    elif mode == '2':
         # マーク配置のための入力
         print("\nマークとして使用する画像ファイルのパスを入力してください。")
         while True:
@@ -204,12 +197,16 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
     ax.set_ylim(plot_min_y, plot_max_y)
 
     # --- 描画処理 ---
-    # 面 (f) の内部をユーザー指定色で塗りつぶし
-    if faces:
+    # モード1: 面 (f) に画像を貼り付け
+    if mode == '1' and faces and image_path:
+        img = mpimg.imread(image_path)
         for face_indices in faces:
             face_verts = [vertices[idx][:2] for idx in face_indices]
-            polygon = Polygon(face_verts, closed=True, facecolor=fill_color, edgecolor='none')
-            ax.add_patch(polygon)
+            clip_poly = Polygon(face_verts, closed=True, facecolor='none', edgecolor='none')
+            ax.add_patch(clip_poly)
+            im_face = ax.imshow(img, extent=(min_x_model, max_x_model, min_y_model, max_y_model),
+                                aspect='auto', origin='upper', interpolation='nearest')
+            im_face.set_clip_path(clip_poly)
 
     # 線 (l) をプロット
     if lines:
@@ -230,7 +227,6 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                     v1, v2 = vertices[v1_idx], vertices[v2_idx]
                     ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-')
 
-
     # 孤立点の周りに円を描画
     if unreferenced_vertices_coords:
         print("\n孤立点が検出されました。描画する円の直径を入力してください。")
@@ -250,8 +246,8 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
             ax.add_patch(circle)
         print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
 
-    # マークを配置
-    if place_mark and mark_img is not None:
+    # モード2: マークを配置
+    if mode == '2' and mark_img is not None:
         img_height, img_width, _ = mark_img.shape
         aspect_ratio = img_height / img_width
         mark_height = mark_width * aspect_ratio
@@ -284,7 +280,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("使用法: python treatPDF_sizing.py <.objファイルへのパス>")
+        print("使用法: python treatPDF_fillpic.py <.objファイルへのパス>")
         sys.exit(1)
 
     obj_file = sys.argv[1]
