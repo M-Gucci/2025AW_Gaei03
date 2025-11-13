@@ -202,7 +202,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
         img = mpimg.imread(image_path)
         for face_indices in faces:
             face_verts = [vertices[idx][:2] for idx in face_indices]
-            clip_poly = Polygon(face_verts, closed=True, facecolor='none', edgecolor='none')
+            clip_poly = Polygon(face_verts, closed=True, facecolor='none', edgecolor='black')
             ax.add_patch(clip_poly)
             im_face = ax.imshow(img, extent=(min_x_model, max_x_model, min_y_model, max_y_model),
                                 aspect='auto', origin='upper', interpolation='nearest')
@@ -242,7 +242,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 print("無効な入力です。数値を入力してください。")
 
         for ux, uy in unreferenced_vertices_coords:
-            circle = Circle((ux, uy), radius=diameter/2, facecolor='black')
+            circle = Circle((ux, uy), radius=diameter/2, color='black')
             ax.add_patch(circle)
         print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
 
