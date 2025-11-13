@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import sys
-import os # ファイルパスの存在確認のためにosをインポート
-import matplotlib.image as mpimg # 画像読み込みのためにimageをインポート
+import os
+import matplotlib.image as mpimg
 from matplotlib.patches import Polygon, Circle
 
 def parse_obj(filename):
@@ -78,6 +78,17 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
 
     # --- ユーザー入力セクション ---
 
+    # 処理モードの選択
+    print("\n実行したい処理を選択してください:")
+    print("1: 面全体を画像で埋める")
+    print("2: 指定した位置にマーク（画像）を配置する")
+    while True:
+        mode = input("選択 (1 or 2): ").strip()
+        if mode in ['1', '2']:
+            break
+        else:
+            print("無効な選択です。1または2を入力してください。")
+
     # スケールの入力
     print("\n希望する出力スケールを入力してください（例: 1.0単位 = 1.0cm）。")
     while True:
@@ -91,19 +102,66 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
         except ValueError:
             print("無効な入力です。数値を入力してください。")
 
-    # 貼り付ける画像のパスを入力
-    print("\n面に貼り付ける画像ファイルのパスを入力してください。")
-    while True:
-        image_path = input("画像ファイルのパス: ").strip()
-        if os.path.exists(image_path) and os.path.isfile(image_path):
+    # モードに応じた入力
+    image_path = None
+    mark_img = None
+    center_x, center_y, mark_width = 0, 0, 0
+
+    if mode == '1':
+        # 貼り付ける画像のパスを入力
+        print("\n面に貼り付ける画像ファイルのパスを入力してください。")
+        while True:
+            image_path = input("画像ファイルのパス: ").strip()
+            if os.path.exists(image_path) and os.path.isfile(image_path):
+                try:
+                    img = mpimg.imread(image_path)
+                    break
+                except Exception as e:
+                    print(f"画像を読み込めませんでした: {e}")
+            else:
+                print("無効なパスです。ファイルが存在しません。")
+    
+    elif mode == '2':
+        # マーク配置のための入力
+        print("\nマークとして使用する画像ファイルのパスを入力してください。")
+        while True:
+            mark_image_path = input("画像ファイルのパス: ").strip()
+            if os.path.exists(mark_image_path) and os.path.isfile(mark_image_path):
+                try:
+                    mark_img = mpimg.imread(mark_image_path)
+                    break
+                except Exception as e:
+                    print(f"画像を読み込めませんでした: {e}")
+            else:
+                print("無効なパスです。ファイルが存在しません。")
+
+        print("\nマークを配置する中心座標 (X, Y) を入力してください。")
+        while True:
             try:
-                # 画像を読み込んでみて、有効か確認
-                img = mpimg.imread(image_path)
+                center_x_str = input("中心のX座標: ")
+                center_x = float(center_x_str)
                 break
-            except Exception as e:
-                print(f"画像を読み込めませんでした: {e}")
-        else:
-            print("無効なパスです。ファイルが存在しません。")
+            except ValueError:
+                print("無効な入力です。数値を入力してください。")
+        while True:
+            try:
+                center_y_str = input("中心のY座標: ")
+                center_y = float(center_y_str)
+                break
+            except ValueError:
+                print("無効な入力です。数値を入力してください。")
+
+        print("\nマークの幅をモデル単位で入力してください。")
+        while True:
+            try:
+                mark_width_str = input("マークの幅: ")
+                mark_width = float(mark_width_str)
+                if mark_width <= 0:
+                    print("幅は正の数でなければなりません。")
+                    continue
+                break
+            except ValueError:
+                print("無効な入力です。数値を入力してください。")
 
     # --- 用紙と描画領域の準備 ---
     paper_width_cm = 29.7
@@ -139,21 +197,15 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
     ax.set_ylim(plot_min_y, plot_max_y)
 
     # --- 描画処理 ---
-    # 面 (f) に画像を貼り付け
-    if faces:
-        # 各面をクリッピングパスとして使用
+    # モード1: 面 (f) に画像を貼り付け
+    if mode == '1' and faces and image_path:
+        img = mpimg.imread(image_path)
         for face_indices in faces:
             face_verts = [vertices[idx][:2] for idx in face_indices]
-            
-            # ポリゴンを作成してクリッピングパスとして使用
-            # このポリゴン自体は描画されない(facecolor='none')
             clip_poly = Polygon(face_verts, closed=True, facecolor='none', edgecolor='none')
             ax.add_patch(clip_poly)
-
-            # 新しいimshowオブジェクトを作成し、それをクリップする
-            # これにより、各面が独立して背景画像を切り抜く
             im_face = ax.imshow(img, extent=(min_x_model, max_x_model, min_y_model, max_y_model),
-                                aspect='auto', origin='lower', interpolation='nearest')
+                                aspect='auto', origin='upper', interpolation='nearest')
             im_face.set_clip_path(clip_poly)
 
     # 線 (l) をプロット
@@ -190,9 +242,24 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 print("無効な入力です。数値を入力してください。")
 
         for ux, uy in unreferenced_vertices_coords:
-            circle = Circle((ux, uy), radius=diameter/2, edgecolor='red', facecolor='none', linestyle='-', linewidth=1.5)
+            circle = Circle((ux, uy), radius=diameter/2, facecolor='black')
             ax.add_patch(circle)
         print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
+
+    # モード2: マークを配置
+    if mode == '2' and mark_img is not None:
+        img_height, img_width, _ = mark_img.shape
+        aspect_ratio = img_height / img_width
+        mark_height = mark_width * aspect_ratio
+
+        x_min = center_x - mark_width / 2
+        x_max = center_x + mark_width / 2
+        y_min = center_y - mark_height / 2
+        y_max = center_y + mark_height / 2
+
+        ax.imshow(mark_img, extent=(x_min, x_max, y_min, y_max), aspect='auto', origin='upper', interpolation='nearest', zorder=10)
+        print(f"座標 ({center_x}, {center_y}) に幅 {mark_width} のマークを配置しました。")
+
 
     # --- 出力設定 ---
     ax.axis('off')
