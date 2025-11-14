@@ -208,7 +208,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
     if faces:
         for face_indices in faces:
             face_verts = [vertices[idx][:2] for idx in face_indices]
-            polygon = Polygon(face_verts, closed=True, facecolor=fill_color, edgecolor='none')
+            polygon = Polygon(face_verts, closed=True, color=fill_color)
             ax.add_patch(polygon)
 
     # 線 (l) をプロット
@@ -246,7 +246,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 print("無効な入力です。数値を入力してください。")
 
         for ux, uy in unreferenced_vertices_coords:
-            circle = Circle((ux, uy), radius=diameter/2, facecolor='black')
+            circle = Circle((ux, uy), radius=diameter/2, color='black')
             ax.add_patch(circle)
         print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
 
