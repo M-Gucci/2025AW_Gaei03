@@ -232,23 +232,23 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
 
 
     #孤立点の周りに円を描画
-    # if unreferenced_vertices_coords:
-    #     print("\n孤立点が検出されました。描画する円の直径を入力してください。")
-    #     while True:
-    #         try:
-    #             diameter_str = input("円の直径を入力 (例: 0.1): ")
-    #             diameter = float(diameter_str)
-    #             if diameter <= 0:
-    #                 print("直径は正の数でなければなりません。")
-    #                 continue
-    #             break
-    #         except ValueError:
-    #             print("無効な入力です。数値を入力してください。")
+    if unreferenced_vertices_coords:
+        print("\n孤立点が検出されました。描画する円の直径を入力してください。")
+        while True:
+            try:
+                diameter_str = input("円の直径を入力 (例: 0.1): ")
+                diameter = float(diameter_str)
+                if diameter <= 0:
+                    print("直径は正の数でなければなりません。")
+                    continue
+                break
+            except ValueError:
+                print("無効な入力です。数値を入力してください。")
 
-    #     for ux, uy in unreferenced_vertices_coords:
-    #         circle = Circle((ux, uy), radius=diameter/2, color='black')
-    #         ax.add_patch(circle)
-    #     print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
+        for ux, uy in unreferenced_vertices_coords:
+            circle = Circle((ux, uy), radius=diameter/2, color='black')
+            ax.add_patch(circle)
+        print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
 
     # マークを配置
     if place_mark and mark_img is not None:
