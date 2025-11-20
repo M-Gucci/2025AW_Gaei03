@@ -1,36 +1,48 @@
 # treatPDF_sizing実行用シェルスクリプト
 python treatPDF_sizing.py ../models/obj/bishop.obj << EOF
-1.9
-0.2
-bishop_19
+3.8
+100 100 100
+n
+0.1
+bishop_38
 EOF
 
 python treatPDF_sizing.py ../models/obj/king.obj << EOF
-1.9
-0.2
-king_19
+3.8
+100 100 100
+n
+0.1
+king_38
 EOF
 
 python treatPDF_sizing.py ../models/obj/knight.obj << EOF
-1.9
-0.2
-knight_19
+3.8
+100 100 100
+n 
+0.1
+knight_38
 EOF
 
 python treatPDF_sizing.py ../models/obj/pawn.obj << EOF
-1.9
-0.2
-pawn_19
+3.8
+100 100 100
+n
+0.1
+pawn_38
 EOF
 
 python treatPDF_sizing.py ../models/obj/qween.obj << EOF
-1.9
-0.2
-qween_19
+3.8
+100 100 100
+n
+0.1
+qween_38
 EOF
 
 python treatPDF_sizing.py ../models/obj/rook.obj << EOF
-1.9
-0.2
-rook_19
+3.8
+100 100 100
+n
+0.1
+rook_38
 EOF
