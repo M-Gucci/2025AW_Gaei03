@@ -171,8 +171,8 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 print("無効な入力です。数値を入力してください。")
 
     # --- 用紙と描画領域の準備 ---
-    paper_width_cm = 29.7
-    paper_height_cm = 42.0
+    paper_width_cm = 59.4
+    paper_height_cm = 84.1
     fig = plt.figure(figsize=(paper_width_cm / 2.54, paper_height_cm / 2.54))
     ax = fig.add_subplot(111)
 
@@ -231,24 +231,24 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                     ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-')
 
 
-    # 孤立点の周りに円を描画
-    if unreferenced_vertices_coords:
-        print("\n孤立点が検出されました。描画する円の直径を入力してください。")
-        while True:
-            try:
-                diameter_str = input("円の直径を入力 (例: 0.1): ")
-                diameter = float(diameter_str)
-                if diameter <= 0:
-                    print("直径は正の数でなければなりません。")
-                    continue
-                break
-            except ValueError:
-                print("無効な入力です。数値を入力してください。")
+    #孤立点の周りに円を描画
+    # if unreferenced_vertices_coords:
+    #     print("\n孤立点が検出されました。描画する円の直径を入力してください。")
+    #     while True:
+    #         try:
+    #             diameter_str = input("円の直径を入力 (例: 0.1): ")
+    #             diameter = float(diameter_str)
+    #             if diameter <= 0:
+    #                 print("直径は正の数でなければなりません。")
+    #                 continue
+    #             break
+    #         except ValueError:
+    #             print("無効な入力です。数値を入力してください。")
 
-        for ux, uy in unreferenced_vertices_coords:
-            circle = Circle((ux, uy), radius=diameter/2, color='black')
-            ax.add_patch(circle)
-        print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
+    #     for ux, uy in unreferenced_vertices_coords:
+    #         circle = Circle((ux, uy), radius=diameter/2, color='black')
+    #         ax.add_patch(circle)
+    #     print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
 
     # マークを配置
     if place_mark and mark_img is not None:
