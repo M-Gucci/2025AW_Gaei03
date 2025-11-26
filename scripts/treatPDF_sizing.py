@@ -199,6 +199,20 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
         else:
             print("無効な入力です。'y'または'n'を入力してください。")
 
+    # 頂点の座標表示の選択
+    display_vertex_coords = False
+    print("\n各頂点の座標を表示しますか？")
+    while True:
+        choice = input("選択 (y/n): ").lower().strip()
+        if choice in ['y', 'yes']:
+            display_vertex_coords = True
+            break
+        elif choice in ['n', 'no']:
+            display_vertex_coords = False
+            break
+        else:
+            print("無効な入力です。'y'または'n'を入力してください。")
+
     # --- 用紙と描画領域の準備 ---
     paper_width_cm = 59.4
     paper_height_cm = 84.1
@@ -258,6 +272,15 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 if v1_idx < len(vertices) and v2_idx < len(vertices):
                     v1, v2 = vertices[v1_idx], vertices[v2_idx]
                     ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-')
+
+    # 各頂点の座標をプロット
+    if display_vertex_coords and vertices:
+        text_offset = 0.05 # テキストオフセット（モデル単位）
+        for v in vertices:
+            vx, vy = v[0], v[1]
+            coord_text = f"({vx:.2f}, {vy:.2f})"
+            ax.text(vx + text_offset, vy + text_offset, coord_text,
+                    fontsize=6, color='black', ha='left', va='bottom')
 
     # 面の重心をプロット
     if display_face_centroids and faces:
