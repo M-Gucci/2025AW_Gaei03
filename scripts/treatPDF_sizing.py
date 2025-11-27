@@ -3,6 +3,7 @@ import sys
 import os
 import matplotlib.image as mpimg
 from matplotlib.patches import Polygon, Circle # PolygonとCircleをインポート
+import numpy as np
 
 def parse_obj(filename):
     """
@@ -170,6 +171,48 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
             except ValueError:
                 print("無効な入力です。数値を入力してください。")
 
+    # 辺の長さ表示の選択
+    display_edge_lengths = False
+    print("\n辺の長さを表示しますか？")
+    while True:
+        choice = input("選択 (y/n): ").lower().strip()
+        if choice in ['y', 'yes']:
+            display_edge_lengths = True
+            break
+        elif choice in ['n', 'no']:
+            display_edge_lengths = False
+            break
+        else:
+            print("無効な入力です。'y'または'n'を入力してください。")
+
+    # 面の重心表示の選択
+    display_face_centroids = False
+    print("\n面の重心に座標を表示しますか？")
+    while True:
+        choice = input("選択 (y/n): ").lower().strip()
+        if choice in ['y', 'yes']:
+            display_face_centroids = True
+            break
+        elif choice in ['n', 'no']:
+            display_face_centroids = False
+            break
+        else:
+            print("無効な入力です。'y'または'n'を入力してください。")
+
+    # 頂点の座標表示の選択
+    display_vertex_coords = False
+    print("\n各頂点の座標を表示しますか？")
+    while True:
+        choice = input("選択 (y/n): ").lower().strip()
+        if choice in ['y', 'yes']:
+            display_vertex_coords = True
+            break
+        elif choice in ['n', 'no']:
+            display_vertex_coords = False
+            break
+        else:
+            print("無効な入力です。'y'または'n'を入力してください。")
+
     # --- 用紙と描画領域の準備 ---
     paper_width_cm = 59.4
     paper_height_cm = 84.1
@@ -230,6 +273,35 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                     v1, v2 = vertices[v1_idx], vertices[v2_idx]
                     ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-')
 
+    # 各頂点の座標をプロット
+    if display_vertex_coords and vertices:
+        text_offset = 0.05 # テキストオフセット（モデル単位）
+        for v in vertices:
+            vx, vy = v[0], v[1]
+            coord_text = f"({vx:.2f}, {vy:.2f})"
+            ax.text(vx + text_offset, vy + text_offset, coord_text,
+                    fontsize=6, color='black', ha='left', va='bottom')
+
+    # 面の重心をプロット
+    if display_face_centroids and faces:
+        text_offset = 0.05 # テキストオフセット（モデル単位）
+        for face_indices in faces:
+            # 頂点が3つ以上ないと面とみなさない
+            if len(face_indices) < 3:
+                continue
+
+            face_verts = np.array([vertices[idx][:2] for idx in face_indices])
+            centroid = np.mean(face_verts, axis=0)
+            
+            # 重心に点をプロット
+            ax.plot(centroid[0], centroid[1], 'o', color='black', markersize=3)
+            
+            # 座標テキストをフォーマット
+            coord_text = f"({centroid[0]:.2f}, {centroid[1]:.2f})"
+            
+            # テキストをプロット（マーカーの右上に配置）
+            ax.text(centroid[0] + text_offset, centroid[1] + text_offset, coord_text,
+                    fontsize=8, color='black', ha='left', va='bottom')
 
     #孤立点の周りに円を描画
     if unreferenced_vertices_coords:
@@ -264,6 +336,106 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
         ax.imshow(mark_img, extent=(x_min, x_max, y_min, y_max), aspect='auto', origin='upper', interpolation='nearest', zorder=10)
         print(f"座標 ({center_x}, {center_y}) に幅 {mark_width} のマークを配置しました。")
 
+    # 辺の長さを表示する場合の処理
+    if display_edge_lengths:
+        annotated_edges = set() # 重複する辺にアノテーションを付けないように追跡
+        text_offset = 0.05 # 固定のオフセット距離（モデル単位）
+        
+        # 線 (l) の長さをアノテーション
+        if lines:
+            for line_indices in lines:
+                for i in range(len(line_indices) - 1):
+                    v1_idx, v2_idx = line_indices[i], line_indices[i+1]
+                    # 頂点インデックスをソートして一意の辺を識別
+                    edge = tuple(sorted((v1_idx, v2_idx)))
+                    
+                    if edge not in annotated_edges and v1_idx < len(vertices) and v2_idx < len(vertices):
+                        v1 = vertices[v1_idx]
+                        v2 = vertices[v2_idx]
+                        
+                        # モデル単位での長さと中点を計算
+                        dx = v2[0] - v1[0]
+                        dy = v2[1] - v1[1]
+                        model_length = (dx**2 + dy**2)**0.5
+                        
+                        mid_x = (v1[0] + v2[0]) / 2
+                        mid_y = (v1[1] + v2[1]) / 2
+                        
+                        # センチメートル単位に変換し、フォーマット
+                        physical_length_cm = model_length * effective_scale_cm_per_unit
+                        length_text = f"{physical_length_cm:.2f}cm"
+                        
+                        # テキストの回転角度を計算 (degrees)
+                        angle_rad = np.arctan2(dy, dx)
+                        angle_deg = np.degrees(angle_rad)
+                        
+                        # テキストを辺に平行にするために角度を調整
+                        if angle_deg > 90:
+                            angle_deg -= 180
+                        elif angle_deg < -90:
+                            angle_deg += 180
+                        
+                        # オフセットを適用 (辺の法線方向に)
+                        # 長さがない辺の場合のゼロ除算を防ぐ
+                        if model_length > 1e-6: # 小さい値でゼロ除算を回避
+                            normal_dx = -dy / model_length
+                            normal_dy = dx / model_length
+                            offset_x = mid_x + normal_dx * text_offset
+                            offset_y = mid_y + normal_dy * text_offset
+                        else:
+                            offset_x, offset_y = mid_x, mid_y # 長さ0の辺はオフセットしない
+
+                        ax.text(offset_x, offset_y, length_text, 
+                                fontsize=8, color='black', ha='center', va='center', rotation=angle_deg)
+                        annotated_edges.add(edge)
+        
+        # 面 (f) の境界線の長さをアノテーション
+        if faces:
+            for face_indices in faces:
+                closed_face_indices = face_indices + [face_indices[0]]
+                for i in range(len(closed_face_indices) - 1):
+                    v1_idx, v2_idx = closed_face_indices[i], closed_face_indices[i+1]
+                    # 頂点インデックスをソートして一意の辺を識別
+                    edge = tuple(sorted((v1_idx, v2_idx)))
+
+                    if edge not in annotated_edges and v1_idx < len(vertices) and v2_idx < len(vertices):
+                        v1 = vertices[v1_idx]
+                        v2 = vertices[v2_idx]
+                        
+                        # モデル単位での長さと中点を計算
+                        dx = v2[0] - v1[0]
+                        dy = v2[1] - v1[1]
+                        model_length = (dx**2 + dy**2)**0.5
+                        
+                        mid_x = (v1[0] + v2[0]) / 2
+                        mid_y = (v1[1] + v2[1]) / 2
+                        
+                        # センチメートル単位に変換し、フォーマット
+                        physical_length_cm = model_length * effective_scale_cm_per_unit
+                        length_text = f"{physical_length_cm:.2f}cm"
+                        
+                        # テキストの回転角度を計算 (degrees)
+                        angle_rad = np.arctan2(dy, dx)
+                        angle_deg = np.degrees(angle_rad)
+                        
+                        # テキストを辺に平行にするために角度を調整
+                        if angle_deg > 90:
+                            angle_deg -= 180
+                        elif angle_deg < -90:
+                            angle_deg += 180
+
+                        # オフセットを適用 (辺の法線方向に)
+                        if model_length > 1e-6: # 小さい値でゼロ除算を回避
+                            normal_dx = -dy / model_length
+                            normal_dy = dx / model_length
+                            offset_x = mid_x + normal_dx * text_offset
+                            offset_y = mid_y + normal_dy * text_offset
+                        else:
+                            offset_x, offset_y = mid_x, mid_y # 長さ0の辺はオフセットしない
+                        
+                        ax.text(offset_x, offset_y, length_text, 
+                                fontsize=8, color='black', ha='center', va='center', rotation=angle_deg)
+                        annotated_edges.add(edge)
 
     # --- 出力設定 ---
     ax.axis('off')
