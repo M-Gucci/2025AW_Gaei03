@@ -5,9 +5,9 @@ python treatPDF_sizing.py ../models/obj/bishop.obj << EOF
 n
 n
 n
-y
+n
 0.1
-bishop_23_addPoint
+bishop_23
 EOF
 
 python treatPDF_sizing.py ../models/obj/king.obj << EOF
@@ -16,9 +16,9 @@ python treatPDF_sizing.py ../models/obj/king.obj << EOF
 n
 n
 n
-y
+n
 0.1
-king_23_addPoint
+king_23
 EOF
 
 python treatPDF_sizing.py ../models/obj/knight.obj << EOF
@@ -27,9 +27,9 @@ python treatPDF_sizing.py ../models/obj/knight.obj << EOF
 n
 n
 n
-y
+n
 0.1
-knight_23_addPoint
+knight_23
 EOF
 
 python treatPDF_sizing.py ../models/obj/pawn.obj << EOF
@@ -38,9 +38,9 @@ python treatPDF_sizing.py ../models/obj/pawn.obj << EOF
 n
 n
 n
-y
+n
 0.1
-pawn_23_addPoint
+pawn_23
 EOF
 
 python treatPDF_sizing.py ../models/obj/qween_front.obj << EOF
@@ -49,9 +49,9 @@ python treatPDF_sizing.py ../models/obj/qween_front.obj << EOF
 n
 n
 n
-y
+n
 0.1
-qween_f_23_addPoint
+qween_f_23
 EOF
 
 python treatPDF_sizing.py ../models/obj/qween_back.obj << EOF
@@ -60,8 +60,8 @@ python treatPDF_sizing.py ../models/obj/qween_back.obj << EOF
 n
 n
 n
-y
-qween_b_23_addPoint
+n
+qween_b_23
 EOF
 
 python treatPDF_sizing.py ../models/obj/rook.obj << EOF
@@ -70,7 +70,7 @@ python treatPDF_sizing.py ../models/obj/rook.obj << EOF
 n
 n
 n
-y
+n
 0.1
-rook_23_addPoint
+rook_23
 EOF
