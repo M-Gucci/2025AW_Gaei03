@@ -206,5 +206,5 @@ y
 $c2
 n
 0.01
-sample_2
+board_rb_color_21
 EOF
