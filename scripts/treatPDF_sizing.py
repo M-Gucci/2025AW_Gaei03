@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import sys
 import os
 import matplotlib.image as mpimg
-from matplotlib.patches import Polygon, Circle # PolygonとCircleをインポート
+from matplotlib.patches import Polygon, Circle, Rectangle # Polygon,Circle,Rectangleをインポート
 import numpy as np
 
 def parse_obj(filename):
@@ -213,6 +213,60 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
         else:
             print("無効な入力です。'y'または'n'を入力してください。")
 
+    # --- ユーザー入力セクション (長方形追加) ---
+    rectangles_to_draw = []
+    print("\n背景に長方形を描画しますか？ (nで終了)")
+    while True:
+        add_rect_choice = input("長方形を追加しますか？ (y/n): ").lower().strip()
+        if add_rect_choice in ['n', 'no']:
+            break
+        
+        if add_rect_choice not in ['y', 'yes']:
+            print("無効な入力です。'y'または'n'を入力してください。")
+            continue
+
+        print("\n描画する長方形の情報を入力してください。")
+        try:
+            rect_center_x_str = input("中心のX座標: ")
+            rect_center_x = float(rect_center_x_str)
+            
+            rect_center_y_str = input("中心のY座標: ")
+            rect_center_y = float(rect_center_y_str)
+
+            rect_width_str = input("長方形の横幅: ")
+            rect_width = float(rect_width_str)
+            if rect_width <= 0:
+                print("幅は正の数でなければなりません。")
+                continue
+
+            rect_height_str = input("長方形の縦幅: ")
+            rect_height = float(rect_height_str)
+            if rect_height <= 0:
+                print("高さは正の数でなければなりません。")
+                continue
+
+            rect_color = input("長方形の色 (例: 'lightgray', '#D3D3D3'): ").strip()
+            # もし6桁の16進数カラーコードで'#'が欠けている場合、自動的に追加
+            if len(rect_color) == 6 and all(c in '0123456789abcdefABCDEF' for c in rect_color.lower()):
+                rect_color = '#' + rect_color
+            if not rect_color:
+                print("色の入力は必須です。")
+                continue
+
+            rectangles_to_draw.append({
+                'center_x': rect_center_x,
+                'center_y': rect_center_y,
+                'width': rect_width,
+                'height': rect_height,
+                'color': rect_color
+            })
+            print("長方形が追加されました。")
+
+        except ValueError:
+            print("無効な数値入力がありました。この長方形の入力はスキップされます。")
+        except Exception as e:
+            print(f"予期せぬエラーが発生しました: {e}")
+
     # --- 用紙と描画領域の準備 ---
     paper_width_cm = 59.4
     paper_height_cm = 84.1
@@ -247,11 +301,26 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
     ax.set_ylim(plot_min_y, plot_max_y)
 
     # --- 描画処理 ---
+    # 背景の長方形を描画 (zorder=0)
+    if rectangles_to_draw:
+        for rect_data in rectangles_to_draw:
+            bottom_left_x = rect_data['center_x'] - rect_data['width'] / 2
+            bottom_left_y = rect_data['center_y'] - rect_data['height'] / 2
+            
+            rect = Rectangle(
+                (bottom_left_x, bottom_left_y),
+                rect_data['width'],
+                rect_data['height'],
+                color=rect_data['color'],
+                zorder=2  # 長方形は面の塗りつぶしの上に描画 (zorder=2)
+            )
+            ax.add_patch(rect)
+
     # 面 (f) の内部をユーザー指定色で塗りつぶし
     if faces:
         for face_indices in faces:
             face_verts = [vertices[idx][:2] for idx in face_indices]
-            polygon = Polygon(face_verts, closed=True, color=fill_color)
+            polygon = Polygon(face_verts, closed=True, color=fill_color, zorder=1) # 面の塗りつぶし (zorder=1)
             ax.add_patch(polygon)
 
     # 線 (l) をプロット
@@ -261,7 +330,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 v1_idx, v2_idx = line_indices[i], line_indices[i+1]
                 if v1_idx < len(vertices) and v2_idx < len(vertices):
                     v1, v2 = vertices[v1_idx], vertices[v2_idx]
-                    ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'b-')
+                    ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'b-', zorder=3) # 線 (zorder=3)
 
     # 面 (f) の境界線をプロット
     if faces:
@@ -271,7 +340,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 v1_idx, v2_idx = closed_face_indices[i], closed_face_indices[i+1]
                 if v1_idx < len(vertices) and v2_idx < len(vertices):
                     v1, v2 = vertices[v1_idx], vertices[v2_idx]
-                    ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-')
+                    ax.plot([v1[0], v2[0]], [v1[1], v2[1]], 'r-', zorder=3) # 面の境界線 (zorder=3)
 
     # 各頂点の座標をプロット
     if display_vertex_coords and vertices:
@@ -318,7 +387,7 @@ def plot_obj(vertices, lines, faces, unreferenced_vertices_coords, min_x_model, 
                 print("無効な入力です。数値を入力してください。")
 
         for ux, uy in unreferenced_vertices_coords:
-            circle = Circle((ux, uy), radius=diameter/2, color='black')
+            circle = Circle((ux, uy), radius=diameter/2, color='black', zorder=3) # 孤立点の円 (zorder=3)
             ax.add_patch(circle)
         print(f"直径 {diameter} の円を孤立点の周りに描画しました。")
 
