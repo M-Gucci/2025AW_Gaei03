@@ -10,6 +10,7 @@ y
 n
 n
 n
+n
 0.1
 bishop_21_purple
 EOF
@@ -22,6 +23,7 @@ y
 0.00
 2.765
 1.95
+n
 n
 n
 n
@@ -40,6 +42,7 @@ y
 n
 n
 n
+n
 0.1
 knight_21_purple
 EOF
@@ -52,6 +55,7 @@ y
 0.00
 2.765
 1.95
+n
 n
 n
 n
@@ -70,6 +74,7 @@ y
 n
 n
 n
+n
 0.1
 qween_f_21_purple
 EOF
@@ -77,6 +82,7 @@ EOF
 python treatPDF_sizing.py ../models/obj/qween_back.obj << EOF
 2.1
 126 113 143
+n
 n
 n
 n
@@ -95,6 +101,7 @@ y
 n
 n
 n
+n
 0.1
 rook_21_purple
 EOF
@@ -107,6 +114,7 @@ y
 0.00
 2.765
 1.95
+n
 n
 n
 n
@@ -125,6 +133,7 @@ y
 n
 n
 n
+n
 0.1
 qween_f_tall_21_purple
 EOF
@@ -132,6 +141,7 @@ EOF
 python treatPDF_sizing.py ../models/obj/qween_back_tall.obj << EOF
 2.1
 126 113 143
+n
 n
 n
 n
